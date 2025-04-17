@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import URLShortener from "../components/URLShortenerForm"; // Adjust path if needed
+import URLShortener from "../components/URLShortenerForm";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -9,30 +9,26 @@ export default function Home() {
   const [origin, setOrigin] = useState("");
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+
     const fetchLinks = async () => {
       if (!session?.user?.email) return;
+      setLoading(true);
 
       try {
         const res = await fetch(`/api/getlinks?email=${session.user.email}`);
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error("Error fetching links:", res.status, errorText);
-          throw new Error("Failed to fetch links");
-        }
         const data = await res.json();
         setLinks(data.links || []);
-      } catch (err) {
-        console.error("Error:", err.message);
+      } catch (error) {
+        console.error("Failed to fetch links:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchLinks();
-
-    if (typeof window !== "undefined") {
-      setOrigin(window.location.origin);
-    }
   }, [session]);
 
   const handleNewLink = (newLink) => {
@@ -54,14 +50,11 @@ export default function Home() {
         }),
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to delete link");
-      }
+      if (!res.ok) throw new Error("Failed to delete link");
 
-      setLinks((prevLinks) => prevLinks.filter((link) => link._id !== linkId));
-    } catch (err) {
-      console.error("Delete error:", err.message);
+      setLinks((prev) => prev.filter((link) => link._id !== linkId));
+    } catch (error) {
+      console.error("Delete error:", error.message);
       alert("Failed to delete link.");
     }
   };
@@ -90,6 +83,7 @@ export default function Home() {
           />
 
           <h2 className="text-xl font-semibold mt-8 mb-2">Your Links</h2>
+
           {loading ? (
             <p>Loading links...</p>
           ) : links.length > 0 ? (
@@ -97,15 +91,7 @@ export default function Home() {
               {links.map((link) => (
                 <li key={link._id} className="border p-3 rounded relative">
                   <p className="font-medium">{link.title}</p>
-                  <a
-                    href={link.originalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
-                  >
-                    {link.originalUrl}
-                  </a>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-600">
                     Short link:{" "}
                     <a
                       href={`/${link.shortUrl}`}
@@ -126,7 +112,7 @@ export default function Home() {
               ))}
             </ul>
           ) : (
-            <p className="text-gray-600">No links found.</p>
+            <p className="text-gray-500">No links found.</p>
           )}
         </>
       ) : (

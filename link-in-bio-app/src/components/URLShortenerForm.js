@@ -1,96 +1,68 @@
-// components/URLShortener.js
 import { useState } from "react";
 
-export default function URLShortener({ userEmail, onLinkCreated }) {
+export default function URLShortenerForm({ userEmail, onLinkCreated }) {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const validateUrl = (inputUrl) => {
-    const regex = /^(https?:\/\/[^\s$.?#].[^\s]*)$/i;
-    return regex.test(inputUrl);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!url || !title || !userEmail) {
-      setErrorMessage("All fields are required.");
-      return;
-    }
-    if (!validateUrl(url)) {
-      setErrorMessage("Please enter a valid URL.");
-      return;
-    }
 
-    setLoading(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+    if (!url || !title) {
+      alert("Please enter a title and URL.");
+      return;
+    }
 
     try {
-      const res = await fetch("/api/shorten", {
+      setLoading(true);
+
+      const res = await fetch("/api/shortenurl", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url,
-          title,
-          email: userEmail,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: userEmail, title, url }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setUrl("");
-        setTitle("");
-        setSuccessMessage("URL shortened successfully!");
-
-        if (onLinkCreated) {
-          onLinkCreated(data.newLink); // Make sure your API returns newLink
-        }
-      } else {
-        setErrorMessage(data.error || "Failed to shorten URL");
+      if (!res.ok) {
+        throw new Error("Failed to create short link");
       }
-    } catch (error) {
-      console.error("Error shortening URL:", error);
-      setErrorMessage("An unexpected error occurred.");
-    }
 
-    setLoading(false);
+      const data = await res.json();
+      onLinkCreated(data.link); // Pass the created link to parent component
+
+      setUrl(""); // Reset form
+      setTitle("");
+    } catch (err) {
+      console.error("Error:", err.message);
+      alert("Error creating short link.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      {successMessage && (
-        <div className="text-green-500 font-semibold">{successMessage}</div>
-      )}
-      {errorMessage && (
-        <div className="text-red-500 font-semibold">{errorMessage}</div>
-      )}
-
+    <form onSubmit={handleSubmit} className="mb-8">
       <input
         type="text"
-        placeholder="Enter title"
+        placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full px-4 py-2 border rounded"
-        required
+        className="border p-2 w-full mb-4"
       />
       <input
         type="url"
-        placeholder="Enter URL"
+        placeholder="URL"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        className="w-full px-4 py-2 border rounded"
-        required
+        className="border p-2 w-full mb-4"
       />
       <button
         type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded"
         disabled={loading}
-        className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700 transition"
       >
-        {loading ? "Shortening..." : "Shorten URL"}
+        {loading ? "Creating..." : "Create Short Link"}
       </button>
     </form>
   );

@@ -8,6 +8,7 @@ export default NextAuth({
       clientSecret: process.env.GITHUB_SECRET,
     }),
   ],
+  
   secret: process.env.NEXTAUTH_SECRET, // It's important to set this for JWT encryption
   callbacks: {
     async jwt({ token, user }) {
@@ -24,9 +25,5 @@ export default NextAuth({
       }
       return session;
     },
-  },
-  pages: {
-    signIn: '/auth/signin', // Custom sign-in page (optional)
-    error: '/auth/error',   // Custom error page (optional)
   },
 });
