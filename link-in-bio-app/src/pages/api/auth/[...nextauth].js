@@ -8,13 +8,13 @@ export default NextAuth({
       clientSecret: process.env.GITHUB_SECRET,
       authorization: {
         params: {
-          scope: "read:user user:email", // Request the necessary scopes for user info and email
+          scope: "read:user user:email",
         },
       },
     }),
   ],
-  
-  secret: process.env.NEXTAUTH_SECRET, // It's important to set this for JWT encryption
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: true,  // Enable debug mode to see detailed logs
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -32,3 +32,4 @@ export default NextAuth({
     },
   },
 });
+
