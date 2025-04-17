@@ -26,7 +26,7 @@ export async function getServerSideProps({ params }) {
   
     return {
       redirect: {
-        destination: link.link, // 👈 redirects to the original URL the user submitted
+        destination: link.link, // redirects to the original URL the user submitted
         permanent: false,
       },
     };
