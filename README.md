@@ -80,7 +80,7 @@ This is a **URL Shortener** app built with **Next.js**, **MongoDB**, and **NextA
 5. Open a Pull Request.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details
+This project is licensed under the [MIT License](./LICENSE.txt).
 
 
 
