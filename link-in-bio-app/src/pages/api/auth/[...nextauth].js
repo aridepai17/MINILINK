@@ -6,6 +6,11 @@ export default NextAuth({
     GitHubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
+      authorization: {
+        params: {
+          scope: "read:user user:email", // Request the necessary scopes for user info and email
+        },
+      },
     }),
   ],
   
